@@ -118,7 +118,7 @@ This project can be compiled into a standalone `.exe` file using **PyInstaller**
 ### 🎨 Icon
 
 <p align="center">
-  <img src="icon.png" alt="Pulse Walker Icon" width="128">
+  <img src="icon.ico" alt="Pulse Walker Icon" width="32">
 </p>   
 
 ---
