@@ -34,7 +34,7 @@ RMSSD_VALID_RANGE = (0.0, 200.0)
 class ECGMonitorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("ЭКГ Монитор | Bio-Hexapod Controller")
+        self.root.title("ECG Monitor | Bio-Hexapod Controller")
         self.root.geometry("900x700")
         self.root.minsize(750, 550)
 
@@ -66,18 +66,18 @@ class ECGMonitorApp:
         port_frame = ttk.Frame(ctrl_frame)
         port_frame.pack(side=tk.LEFT)
         
-        ttk.Label(port_frame, text="ЭКГ:", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT, padx=(0, 3))
+        ttk.Label(port_frame, text="ECG:", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT, padx=(0, 3))
         self.combo_ecg = ttk.Combobox(port_frame, width=12, state="readonly")
         self.combo_ecg.pack(side=tk.LEFT, padx=3)
 
-        ttk.Label(port_frame, text="Робот:", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT, padx=(15, 3))
+        ttk.Label(port_frame, text="Robot:", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT, padx=(15, 3))
         self.combo_robot = ttk.Combobox(port_frame, width=12, state="readonly")
         self.combo_robot.pack(side=tk.LEFT, padx=3)
 
         ttk.Button(port_frame, text="↻", command=self._refresh_ports, width=3).pack(side=tk.LEFT, padx=10)
 
         # Переключатель био-режима
-        mode_frame = ttk.LabelFrame(ctrl_frame, text=" Источник частоты", padding="5")
+        mode_frame = ttk.LabelFrame(ctrl_frame, text=" Frequency source", padding="5")
         mode_frame.pack(side=tk.LEFT, padx=(30, 10))
         
         ttk.Radiobutton(mode_frame, text="HR (ЧСС)", variable=self.bio_source, 
@@ -89,13 +89,13 @@ class ECGMonitorApp:
         self.btn_connect = ttk.Button(ctrl_frame, text="🔌 Connect", command=self._toggle_connection, width=14)
         self.btn_connect.pack(side=tk.RIGHT, padx=10)
 
-        self.status_lbl = ttk.Label(ctrl_frame, text="● Отключено", foreground="gray", font=("Segoe UI", 9))
+        self.status_lbl = ttk.Label(ctrl_frame, text="● Disconnected", foreground="gray", font=("Segoe UI", 9))
         self.status_lbl.pack(side=tk.RIGHT, padx=10)
 
         self._refresh_ports()
 
         # === График ЭКГ ===
-        plot_frame = ttk.LabelFrame(self.root, text=" Сигнал ЭКГ (АЦП 0-1023)", padding="5")
+        plot_frame = ttk.LabelFrame(self.root, text=" ECG signal (0-1023)", padding="5")
         plot_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
         self.fig = Figure(figsize=(6, 4), dpi=100)
@@ -104,8 +104,8 @@ class ECGMonitorApp:
         
         self.ax.set_ylim(0, 1023)
         self.ax.set_xlim(0, PLOT_POINTS)
-        self.ax.set_xlabel("Отсчёты")
-        self.ax.set_ylabel("АЦП")
+        self.ax.set_xlabel("Time")
+        self.ax.set_ylabel("Signal")
         self.ax.grid(True, linestyle="--", alpha=0.5)
         self.ax.set_facecolor("#f8f9fa")
 
@@ -130,7 +130,7 @@ class ECGMonitorApp:
 
         # Статус-бар
         self.info_lbl = ttk.Label(metrics_frame, 
-                                  text="Ожидание... | Mode: HR | ECG:9600bod | Robot:9600bod", 
+                                  text="Waiting... | Mode: HR | ECG:9600bod | Robot:9600bod", 
                                   font=("Segoe UI", 9), foreground="gray", anchor="w")
         self.info_lbl.pack(fill=tk.X, pady=(8, 0))
 
@@ -160,7 +160,7 @@ class ECGMonitorApp:
         port_ecg = self.combo_ecg.get()
         port_robot = self.combo_robot.get()
         if not port_ecg or not port_robot:
-            messagebox.showerror("Ошибка", "Выберите COM-порты для ЭКГ и Робота")
+            messagebox.showerror("Error", "Select COM-ports for ecg and robot")
             return
         try:
             self.ser_ecg = serial.Serial(port_ecg, BAUD_ECG, timeout=1)
@@ -172,10 +172,10 @@ class ECGMonitorApp:
             
             self.connected = True
             self.btn_connect.config(text=" Disconnect")
-            self.status_lbl.config(text="● Подключено", foreground="#27ae60")
+            self.status_lbl.config(text="● Connected", foreground="#27ae60")
             self.info_lbl.config(text=f"✅ Connected | Mode: {self.bio_source.get()}")
         except serial.SerialException as e:
-            messagebox.showerror("Serial Error", f"Не удалось открыть порты:\n{e}")
+            messagebox.showerror("Serial Error", f"{e}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
@@ -188,7 +188,7 @@ class ECGMonitorApp:
         self.connected = False
         
         self.btn_connect.config(text="🔌 Connect")
-        self.status_lbl.config(text="● Отключено", foreground="gray")
+        self.status_lbl.config(text="● Disconnected", foreground="gray")
         self.ecg_data.clear()
         self.line.set_data([], [])
         self.canvas.draw_idle()

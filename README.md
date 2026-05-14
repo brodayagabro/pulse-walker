@@ -1,6 +1,8 @@
 
 # 🕷️ Pulse Walker
 
+![Pulse Walker Banner](img/README_img.png)
+
 **A biofeedback-controlled hexapod robot for neurocognitive training.**
 
 Pulse Walker is a robotic system designed to help users train their autonomic nervous system (ANS) through biological feedback. The robot's locomotion speed is directly modulated by the pilot's physiological state—specifically **Heart Rate (HR)** and **Heart Rate Variability (RMSSD)**.
@@ -28,35 +30,37 @@ The system operates on a closed biofeedback loop:
 | :--- | :--- | :--- |
 | **Microcontrollers** | 2x Arduino (Uno, Nano, or Mega) | One for ECG, one for Robot |
 | **Hexapod Chassis** | 3-DOF | Modified for 3 servos |
+|**Bluetooth module**| HC05(HC06)| conneted to RX\TX on robot controller|
 | **Actuators** | 3x MG996R or SG90 Servos | Connected to pins 5, 6, 9 |
 | **Sensors** | AD8232 or Bitronics ECG Module | Connected to A0 |
-| **Input** | Analog Joystick Module | Connected to Robot Arduino (optional for bridge) |
+| **Input** | Analog Joystick Module | Connected to ecg Arduino Vx to A5, Vy to A6 |
 | **Connectivity** | USB or Bluetooth Serial | Connects Robot Arduino to PC |
 
+### Hexapod
+![Hexapod setup](img/hexapod.jpg)
 ---
+
+
 
 ## 📦 Software Architecture
 
 The system consists of three main parts:
 
-1.  **ECG Module:** Reads sensor data, filters noise (bandpass), and outputs text strings like: `SIG:500 HR:72.5 Vx:512 Vy:400 ...`
-2.  **Robot Controller:** Receives commands (`H:xx`, `R:xx`, `U`, `L`, `R`) and drives the servos using a non-blocking state machine.
-3.  **Python Bridge (`bridge-gui.py`):** Parses the serial stream, updates the UI, and forwards movement/bio-feedback commands to the robot.
+1.  **ECG Module:** Reads sensor data, filters noise (bandpass), and outputs text strings like: `SIG:500 HR:72.5 Vx:512 Vy:400 ...` (`Arduino/ECG_processor`).
+2.  **Robot Controller:** Receives commands (`HR:xx`, `RMSSD:xx`, `U`, `L`, `R`, `S`) and drives the servos using a non-blocking state machine(`stl`, `Arduino/bio-robot-control`).
+3.  **Python Bridge (`app.py`):** Parses the serial stream, updates the UI, and forwards movement/bio-feedback commands to the robot.
 
 ---
 
 ## 🚀 Installation & Setup
 
 ### 1. Python Dependencies
-You will need Python 3.8+. Install the required libraries:
-
-```bash
-pip install pyserial matplotlib
-```
+You will need Python 3.8+.
 
 ### 2. Arduino Flashing
-Upload the **Robot Controller** sketch (e.g., `hexapod_bio_control.ino`) to the Arduino connected to your robot.
+Upload the **Robot Controller** sketch (e.g., `bio_robot_control.ino`) to the Arduino connected to your robot.
 *   **Servo Pins:** 5 (Right), 6 (Center), 9 (Left).
+*   **HC-05 Pins:** 5V(VCC), GND(GND), TX(RX), RX(TX).
 *   **Serial Baud Rate:** 9600.
 
 ### 3. ECG Module
@@ -70,7 +74,7 @@ Upload the ECG processing sketch to your second Arduino. Ensure it is connected 
 1.  Connect both the ECG module and the Robot module to your computer.
 2.  Run the application:
     ```bash
-    python bridge-gui.py
+    python app.py
     ```
 3.  **Select COM Ports:** Choose the correct ports for "ECG" and "Robot" from the dropdown menus.
 4.  **Connect:** Click the `Connect` button.
@@ -78,12 +82,12 @@ Upload the ECG processing sketch to your second Arduino. Ensure it is connected 
 
 ### Command Protocol
 The robot accepts the following commands via Serial:
-*   `H:72.5` - Set frequency based on Heart Rate (60-120 BPM).
-*   `R:45.2` - Set frequency based on RMSSD.
+*   `HR:72.5` - Set frequency based on Heart Rate (60-120 BPM).
+*   `RMSSD:45.2` - Set frequency based on RMSSD.
 *   `U` - Forward / Active movement.
 *   `L` - Turn Left.
 *   `R` - Turn Right.
-*   `D` - Stop / Reset.
+*   `S` - Stop / Reset.
 
 ---
 
@@ -91,32 +95,31 @@ The robot accepts the following commands via Serial:
 
 This project can be compiled into a standalone `.exe` file using **PyInstaller**. This allows you to run the application without having Python installed on the target machine.
 
-### Prerequisites
-Ensure you have PyInstaller installed:
-```bash
-pip install pyinstaller
-```
-
 ### Build Instructions
 
 1.  **Project Structure:**
     Ensure these files are in your root directory:
-    *   `bridge-gui.py` (Main script)
-    *   `bridge-gui.spec` (Configuration file)
+    *   `app.py` (Main script)
     *   `build.bat` (Build script for Windows)
+    *   `build.sh` (Build script for Windows)
 
-2.  **Run the Build:**
-    Run `build.bat` from the terminal with conda:
+2.  **Run the Build:** 
+    Run `build.bat`(`build.sh`) from the terminal with conda(*prefer to create a new environment, because `matplotlib, pyserial, pyinstaller` will be installed in your environment*):
     ```cmd
     build.bat
     ```
 
-3.  **Output:**
+4.  **Output:**
     If successful, the application will be created in the `dist` folder:
     `dist\pulse-walker\pulse-walker.exe`
 
-### Configuration Details (`bridge-gui.spec`)
-The configuration file ensures that all dependencies (like `matplotlib` data files and `serial` tools) are bundled correctly. It is configured to build a **directory** (onefolder) rather than a single file for better stability with GUI libraries.
+   Script will automaticly create lnk-file in build-script folder.
+
+### 🎨 Icon
+
+<p align="center">
+  <img src="icon.png" alt="Pulse Walker Icon" width="128">
+</p>   
 
 ---
 

@@ -56,7 +56,7 @@ int debugRR = 0, debugHR = 0;
 float debugRMSSD = 0, debugSDNN = 0;
 int filteredValue = 0, rawValue = 0;
 
-// --- Показания с жойстика ---
+// --- Показания с джойстика ---
 int Vx; int Vy;
 
 // ==================== ФИЛЬТРАЦИЯ ====================
@@ -213,7 +213,22 @@ void sendDebugText() {
 }
 
 void sendDebugCommands(){
+    if (!DEBUG_TEXT_OUTPUT) return;
+  unsigned long currentTime = millis();
+  if (currentTime - lastTextSendTime < TEXT_UPDATE_INTERVAL_MS) return;
+    lastTextSendTime = currentTime;
   
+  Serial.print("SIG:"); Serial.print(filteredValue);
+  // Serial.print(" MIN:"); Serial.print(signalMin);
+  // Serial.print(" MAX:"); Serial.print(signalMax);
+  //Serial.print(" THR:"); Serial.print(peakThreshold);
+  //Serial.print(" RR:"); Serial.print(debugRR);
+  Serial.print(" HR:"); Serial.print(debugHR);
+  Serial.print(" RMSSD:"); Serial.print(debugRMSSD, 1);
+  Serial.print(" SDNN:"); Serial.print(debugSDNN, 1);
+  //Serial.print(" CNT:"); Serial.print(rrCount);
+  Serial.print(" Vx:"); Serial.print(Vx);
+  Serial.print(" Vy:"); Serial.println(Vy);
 }
 
 void sendByteData() {
@@ -242,14 +257,15 @@ void sendData() {
   }
   debugRMSSD = calculateRMSSD();
   debugSDNN = calculateSDNN();
-  
-  sendDebugText();
+
+  //sendDebugText();
+  sendDebugCommands();
   //sendByteData();
 }
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 void initAll() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   initBandpassFilter();
   
   // Сброс буферов
